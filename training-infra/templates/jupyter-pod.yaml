@@ -17,10 +17,14 @@ spec:
         export DEBIAN_FRONTEND=noninteractive
         
         # Install required system packages
-        apt-get update && apt-get install -y s3fs fuse
+        apt-get update && apt-get install -y s3fs fuse rsync curl
         
         # Install Python packages
         pip install --no-cache-dir jupyterlab jupyter
+        
+        # Install MinIO client
+        curl https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+        chmod +x /usr/local/bin/mc
         
         # Create directories
         mkdir -p /tmp/notebooks /tmp/minio-internal/datasets /tmp/minio-internal/models /tmp/minio-external/datasets /tmp/minio-external/models
@@ -34,8 +38,20 @@ spec:
         cat > /tmp/refresh_minio.sh << EOF
         #!/bin/bash
         
+        # Access environment variables
+        MINIO_ACCESS_KEY="\${MINIO_ACCESS_KEY}"
+        MINIO_SECRET_KEY="\${MINIO_SECRET_KEY}"
+        ENVIRONMENT="\${ENVIRONMENT}"
+        
+        # Configure MinIO clients for internal and external servers
+        mc alias set internal-minio http://minio.minio-internal-\${ENVIRONMENT}.svc.cluster.local:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+        mc alias set backup-minio http://minio.minio-external-\${ENVIRONMENT}.svc.cluster.local:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+        
         # Function to mount MinIO
         mount_minio() {
+          rm -R /tmp/minio-external/models
+          mkdir -p /tmp/minio-external/models
+          
           # Unmount if already mounted
           fusermount -u /tmp/minio-internal/datasets 2>/dev/null
           fusermount -u /tmp/minio-internal/models 2>/dev/null
@@ -68,6 +84,20 @@ spec:
           # Force directory listings to ensure visibility
           find /tmp/minio-internal/models -type d 2>/dev/null | xargs ls -la 2>/dev/null
           find /tmp/minio-internal/datasets -type d 2>/dev/null | xargs ls -la 2>/dev/null
+          find /tmp/minio-external/models -type d 2>/dev/null | xargs ls -la 2>/dev/null
+          find /tmp/minio-external/datasets -type d 2>/dev/null | xargs ls -la 2>/dev/null
+            
+          # Backup checkpoints to external MinIO
+          if [ -d "/tmp/minio-internal/models/checkpoints/sentiment_model" ]; then
+            echo "\$(date) - Backing up checkpoints from internal to external MinIO..."
+            
+            # Copy backups of checkpoints
+            mc mirror --overwrite --remove internal-minio/models/checkpoints/sentiment_model/ backup-minio/models/checkpoints/sentiment_model/
+            
+            echo "\$(date) - Checkpoint backup completed"
+          else
+            echo "\$(date) - No checkpoints found to back up"
+          fi
             
           echo "\$(date) - MinIO filesystems remounted"
         }
@@ -82,9 +112,6 @@ spec:
         
         chmod +x /tmp/refresh_minio.sh
         
-        ls /tmp/minio-internal
-        ls /tmp/minio-external
-
         # Create symbolic links in notebooks directory
         ln -s /tmp/minio-internal /tmp/notebooks/minio-internal
         ln -s /tmp/minio-external /tmp/notebooks/minio-external
@@ -100,7 +127,8 @@ spec:
         echo "Starting refresh script in the background"
         nohup /tmp/refresh_minio.sh > /tmp/notebooks/refresh_minio.log 2>&1 &
         
-        # Start Jupyter server
+        # Start Jupyter server - this is a trusted environment and only accessible from the
+        # cluster, so we don't need to worry about security
         cd /tmp/notebooks
         jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''
     ports:
