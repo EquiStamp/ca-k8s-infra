@@ -79,8 +79,8 @@ Model weights and datasets are stored in the internal MinIO deployment, accessib
 
 ```python
 fs = pyarrow.fs.S3FileSystem(
-    access_key="minioadmin",
-    secret_key="minioadmin",
+    access_key="root_ZI49tw3FdhOvxcwR",
+    secret_key="BK3X9JaqhXKZvSMLK8OuubMuzXGLUljTziafRWGVnN7hYGxYfqrdTK3OBaiubQeU",
     endpoint_override="minio.minio-internal.svc.cluster.local:9000",
     scheme="http"
 )

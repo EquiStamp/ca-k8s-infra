@@ -21,9 +21,9 @@ spec:
           mc mb myminio/datasets --ignore-existing
         env:
         - name: MINIO_ACCESS_KEY
-          value: "minioadmin"
+          value: "root_ZI49tw3FdhOvxcwR"
         - name: MINIO_SECRET_KEY
-          value: "minioadmin"
+          value: "BK3X9JaqhXKZvSMLK8OuubMuzXGLUljTziafRWGVnN7hYGxYfqrdTK3OBaiubQeU"
         - name: ENVIRONMENT
           value: {{ .Values.environment }}
       restartPolicy: Never
@@ -63,9 +63,9 @@ spec:
           mc mb myminio/datasets --ignore-existing
         env:
         - name: MINIO_ACCESS_KEY
-          value: "minioadmin"
+          value: "root_ZI49tw3FdhOvxcwR"
         - name: MINIO_SECRET_KEY
-          value: "minioadmin"
+          value: "BK3X9JaqhXKZvSMLK8OuubMuzXGLUljTziafRWGVnN7hYGxYfqrdTK3OBaiubQeU"
         - name: ENVIRONMENT
           value: {{ .Values.environment }}
       restartPolicy: Never
