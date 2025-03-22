@@ -1,15 +1,20 @@
-.PHONY: entrypoint install train deploy start_port_forward stop_port_forward
+.PHONY: entrypoint install train deploy start_port_forward stop_port_forward create_aws_secret
 
 ENVIRONMENT ?= dev-
 
 entrypoint: deploy train
+
+create_aws_secret:
+	@echo "Saving AWS credentials..."
+	# This is needed for the secrets to be avaiable for minio
+	@kubectl create secret generic aws-creds --from-literal=AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} --from-literal=AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY}
 
 make refresh:
 	@echo "Refreshing resources..."
 	@helm uninstall training-infra 
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
 
-deploy:
+deploy: create_aws_secret
 	@echo "Deploying resources..."
 	@helm upgrade --install training-infra  ./training-infra --set environment=${ENVIRONMENT}
 	@echo "Waiting for jobs to complete..."
