@@ -1,5 +1,6 @@
 import os
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -7,6 +8,7 @@ import pyarrow
 import ray
 import torch
 from datasets import load_from_disk
+from feast import FeatureStore
 from pyarrow.fs import S3FileSystem
 from ray.train import RunConfig, ScalingConfig
 from ray.train.torch import TorchTrainer, prepare_data_loader, prepare_model
@@ -217,9 +219,21 @@ def train_func(config):
     return {"final_loss": epoch_loss / len(train_loader)}
 
 
+def update_feast_feature_store():
+    store = FeatureStore('./feast')
+    store.materialize_incremental(end_date=datetime.now())
+    # TODO?: simulate an ingestion stream
+    # store.push("push_source", event_df, to=PushMode.ONLINE_AND_OFFLINE)
+
+
 if __name__ == "__main__":
     # Run `make ray_port_forward` ahead of this to make the ray cluster accessible
     ray.init(address="ray://localhost:10001", runtime_env=runtime_env)
+
+    try:
+        update_feast_feature_store()
+    except Exception as e:
+        print(f"Failed to update Feast feature store: {e}")
 
     with TemporaryDirectory() as results_dir:
         # Create the trainer

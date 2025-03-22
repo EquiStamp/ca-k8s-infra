@@ -1,0 +1,84 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: feast
+  namespace: feast-{{ .Values.environment }}
+spec:
+  template:
+    spec:
+      containers:
+      - name: feast-setup
+        image: python:3.12-slim
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # TODO: use dockerfile
+          pip install feast
+
+          # TODO: how do we reference this directory properly?
+          mkdir -p /workspace/training-infra/feast
+
+          # Configure Feast with online and offline stores
+          cat << EOF > /workspace/training-infra/feast/feature_store.yaml
+          project: feast_project
+          registry: data/registry.db
+          provider: local
+          online_store:
+            # type: redis
+            # connection_string: redis://redis-{{ .Values.environment }}.redis.svc.cluster.local:6379/0
+            type: sqlite
+            path: data/online_store.db
+          entity_key_serialization_version: 2
+          auth:
+            type: no_auth
+          EOF
+
+          # Apply the feature definitions
+          cd /workspace/training-infra/feast
+          feast apply
+{{/*        env:*/}}
+{{/*        - name: REDIS_PASSWORD*/}}
+{{/*          valueFrom:*/}}
+{{/*            secretKeyRef:*/}}
+{{/*              name: redis-{{ .Values.environment }}*/}}
+{{/*              key: redis-password*/}}
+{{/*        - name: ENVIRONMENT*/}}
+{{/*          value: {{ .Values.environment }}*/}}
+      restartPolicy: Never
+  backoffLimit: 4
+  activeDeadlineSeconds: 600  # Job will fail after 600 seconds if not completed
+{{/*---*/}}
+{{/*apiVersion: "cilium.io/v2"*/}}
+{{/*kind: CiliumNetworkPolicy*/}}
+{{/*metadata:*/}}
+{{/*  name: feast-network-policy*/}}
+{{/*  namespace: feast-{{ .Values.environment }}*/}}
+{{/*spec:*/}}
+{{/*  endpointSelector:*/}}
+{{/*    matchLabels:*/}}
+{{/*      job-name: feast-{{ .Values.environment }}*/}}
+{{/*  egress:*/}}
+{{/*    # Allow access to Redis*/}}
+{{/*    - toEndpoints:*/}}
+{{/*        - matchLabels:*/}}
+{{/*            app: feast-redis*/}}
+{{/*            k8s:io.kubernetes.pod.namespace: feast-redis-{{ .Values.environment }}*/}}
+{{/*      toPorts:*/}}
+{{/*        - ports:*/}}
+{{/*            - port: "6379"*/}}
+{{/*              protocol: TCP*/}}
+{{/*    */}}
+{{/*    # Allow DNS queries*/}}
+{{/*    - toEndpoints:*/}}
+{{/*        - matchLabels:*/}}
+{{/*            k8s:io.kubernetes.pod.namespace: kube-system*/}}
+{{/*            k8s-app: kube-dns*/}}
+{{/*      toPorts:*/}}
+{{/*        - ports:*/}}
+{{/*            - port: "53"*/}}
+{{/*              protocol: UDP*/}}
+{{/*            - port: "53"*/}}
+{{/*              protocol: TCP*/}}
+{{/*              */}}
