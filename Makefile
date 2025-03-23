@@ -7,11 +7,11 @@ entrypoint: deploy train
 make refresh:
 	@echo "Refreshing resources..."
 	@helm uninstall training-infra
-	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
+	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT} --set aws_access_key_id=${AWS_ACCESS_KEY_ID}  -set aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}
 
 deploy:
 	@echo "Deploying resources..."
-	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
+	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT} --set aws_access_key_id=${AWS_ACCESS_KEY_ID}  -set aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}
 	@echo "Waiting for jobs to complete..."
 	@kubectl get jobs -o name | xargs -I {} bash -c 'kubectl wait --for=condition=complete {} --timeout=300s || kubectl wait --for=condition=failed {} --timeout=300s'
 

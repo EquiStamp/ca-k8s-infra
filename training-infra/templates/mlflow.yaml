@@ -55,6 +55,6 @@ spec:
           - name: POSTGRES_DB
             value: mlflow
           - name: AWS_ACCESS_KEY_ID
-            value: AKIAT4GVSAXXDBBY3WYS
+            value: {{ .Values.aws_access_key_id }}
           - name: AWS_SECRET_ACCESS_KEY
-            value: 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
+            value: {{ .Values.aws_secret_access_key }}
