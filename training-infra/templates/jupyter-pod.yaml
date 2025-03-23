@@ -25,7 +25,7 @@ spec:
         # Create directories
         mkdir -p /tmp/notebooks /tmp/minio-internal/datasets /tmp/minio-internal/models /tmp/minio-external/datasets /tmp/minio-external/models
         
-        # Create minio credentials file for s3fs
+        # Create and secure minio credentials file for s3fs
         PASSWD_FILE="/tmp/passwd-s3fs"
         echo "$MINIO_ACCESS_KEY:$MINIO_SECRET_KEY" > $PASSWD_FILE
         chmod 600 $PASSWD_FILE
