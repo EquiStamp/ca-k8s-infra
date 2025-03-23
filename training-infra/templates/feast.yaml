@@ -14,29 +14,9 @@ spec:
         - /bin/bash
         - -c
         - |
-          # TODO: use dockerfile
           pip install feast
-
-          # TODO: how do we reference this directory properly?
-          mkdir -p /workspace/training-infra/feast
-
-          # Configure Feast with online and offline stores
-          cat << EOF > /workspace/training-infra/feast/feature_store.yaml
-          project: feast_project
-          registry: data/registry.db
-          provider: local
-          online_store:
-            # type: redis
-            # connection_string: redis://redis-{{ .Values.environment }}.redis.svc.cluster.local:6379/0
-            type: sqlite
-            path: data/online_store.db
-          entity_key_serialization_version: 2
-          auth:
-            type: no_auth
-          EOF
-
-          # Apply the feature definitions
-          cd /workspace/training-infra/feast
+          feast init feast
+          cd feast/feature_repo
           feast apply
 {{/*        env:*/}}
 {{/*        - name: REDIS_PASSWORD*/}}
