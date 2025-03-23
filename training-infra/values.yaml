@@ -1,3 +1,6 @@
 rayClusterName: raycluster
 jupyter:
   token: "yzMWkOQ96DtPckxrJ2qcOmkA6c1JUe"
+minio:
+  name: "minioadmin"
+  user: "minioadmin"

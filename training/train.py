@@ -14,12 +14,6 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-runtime_env = {
-    "env_vars": {
-        "ENVIRONMENT": os.environ["ENVIRONMENT"],
-    }
-}
-
 # Define the scaling configuration
 scaling_config = ScalingConfig(
     num_workers=2,
@@ -76,14 +70,14 @@ def train_func(config):
 
     # Initialize the S3 filesystem
     fs = S3FileSystem(
-        access_key="minioadmin",
-        secret_key="minioadmin",  # noqa
+        access_key=os.environ["MINIO_ACCESS_KEY"],
+        secret_key=os.environ["MINIO_SECRET_KEY"],  # noqa
         endpoint_override=f"minio.minio-internal-{os.environ['ENVIRONMENT']}.svc.cluster.local:9000",
         scheme="http",
     )
     fs_push = S3FileSystem(
-        access_key="minioadmin",
-        secret_key="minioadmin",  # noqa
+        access_key=os.environ["MINIO_ACCESS_KEY"],
+        secret_key=os.environ["MINIO_SECRET_KEY"],  # noqa
         endpoint_override=f"minio.minio-external-{os.environ['ENVIRONMENT']}.svc.cluster.local:9000",
         scheme="http",
     )
@@ -226,7 +220,7 @@ def train_func(config):
 
 if __name__ == "__main__":
     # Run `make ray_port_forward` ahead of this to make the ray cluster accessible
-    ray.init(address="ray://localhost:10001", runtime_env=runtime_env)
+    ray.init(address="ray://localhost:10001")
 
     with TemporaryDirectory() as results_dir:
         # Create the trainer

@@ -34,6 +34,13 @@ spec:
             volumeMounts:
               - mountPath: /tmp/ray
                 name: ray-logs
+            env:
+              - name: MINIO_ACCESS_KEY
+                value: {{ .Values.minio.name }}
+              - name: MINIO_SECRET_KEY
+                value: {{ .Values.minio.user }}
+              - name: ENVIRONMENT
+                value: {{ .Values.environment }}
         volumes:
           - name: ray-logs
             emptyDir: {}
@@ -65,6 +72,13 @@ spec:
               volumeMounts:
                 - mountPath: /tmp/ray
                   name: ray-logs
+              env:
+                - name: MINIO_ACCESS_KEY
+                  value: {{ .Values.minio.name }}
+                - name: MINIO_SECRET_KEY
+                  value: {{ .Values.minio.user }}
+                - name: ENVIRONMENT
+                  value: {{ .Values.environment }}
           volumes:
             - name: ray-logs
               emptyDir: {}

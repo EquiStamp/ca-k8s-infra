@@ -14,6 +14,18 @@
         },
         "required": ["token"]
       },
+      "minio": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "user": {
+            "type": "string"
+          }
+        },
+        "required": ["name", "user"]
+      },
       "environment": {
         "type": "string"
       }

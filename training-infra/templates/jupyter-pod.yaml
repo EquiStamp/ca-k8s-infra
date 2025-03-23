@@ -27,7 +27,7 @@ spec:
         
         # Create and secure minio credentials file for s3fs
         PASSWD_FILE="/tmp/passwd-s3fs"
-        echo "$MINIO_ACCESS_KEY:$MINIO_SECRET_KEY" > $PASSWD_FILE
+        echo "{{ .Values.minio.name }}:{{ .Values.minio.user }}" > $PASSWD_FILE
         chmod 600 $PASSWD_FILE
         
         # Create auto-refresh script
@@ -109,10 +109,6 @@ spec:
     env:
       - name: RAY_ADDRESS
         value: "raycluster-{{ .Values.environment }}-head-svc:10001"
-      - name: MINIO_ACCESS_KEY
-        value: "minioadmin"
-      - name: MINIO_SECRET_KEY
-        value: "minioadmin"
       - name: MINIO_INTERNAL_ENDPOINT
         value: "minio.minio-internal-{{ .Values.environment }}.svc.cluster.local:9000"
       - name: MINIO_EXTERNAL_ENDPOINT
