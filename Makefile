@@ -17,6 +17,9 @@ deploy_argocd:
 	@curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v2.14.6/argocd-linux-amd64
 	@sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
 	@rm argocd-linux-amd64
+	@env > /tmp/argo-config
+	@kubectl create configmap argo-config --from-env-file /tmp/argo-config
+	@rm /tmp/argo-config
 	@argocd login --core
 
 push_argocd_repo:
