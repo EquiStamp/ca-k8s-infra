@@ -1,0 +1,80 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stanfordnlp-imdb-dataset-sync-feast
+spec:
+  template:
+    spec:
+      containers:
+      - name: dataset-sync
+        image: localhost:5001/job:{{ .Values.environment }}
+        imagePullPolicy: Always
+        command:
+        - python3
+        - -c
+        - |
+          import datetime
+          
+          from datasets import load_dataset
+          from feast import FeatureStore, RepoConfig, Entity, Feature, FeatureView, ValueType
+          from feast.infra.offline_stores.duckdb import DuckDBOfflineStoreConfig
+          from feast.infra.online_stores.redis import RedisOnlineStoreConfig
+          
+          # 1. Download the IMDb dataset
+          imdb_dataset = load_dataset("stanfordnlp/imdb")
+          df = imdb_dataset.to_pandas()
+          
+          # Add a unique identifier for each review (this will serve as our primary key)
+          df["review_id"] = range(len(df))
+          
+          # Add an event timestamp (Feast uses this column during ingestion)
+          df["event_timestamp"] = datetime.datetime.now()
+          
+          # 2. Set up Feast: define an entity and a feature view
+          from feast import FeatureStore, Entity, Feature, FeatureView, ValueType
+          
+          # Define an entity to represent each review by its unique id
+          review_entity = Entity(
+          name="review_id",
+          value_type=ValueType.INT64,
+          description="Unique review identifier"
+          )
+          
+          # Define a FeatureView for the IMDb reviews
+          imdb_feature_view = FeatureView(
+          name="imdb_reviews",
+          entities=["review_id"],
+          features=[
+          Feature(name="text", dtype=ValueType.STRING),
+          Feature(name="label", dtype=ValueType.INT64)
+          ],
+          # We are not specifying a TTL or batch_source here since we will use in-memory ingestion.
+          ttl=None
+          )
+          
+          # 3. Connect to your Feast feature store
+          repo_config = RepoConfig(
+          project="imdb",
+          registry="data/registry.db",  # Path where the registry will be stored
+          provider="local",  # Using the local provider for this example
+          offline_store=DuckDBOfflineStoreConfig(),
+          online_store=RedisOnlineStoreConfig(),
+          host="redis.feast-{{ .Values.environment }}.svc.cluster.local",
+          port=6379,
+          entity_key_serialization_version=2,
+          )
+          )
+          store = FeatureStore(config=repo_config)
+          
+          # Apply the Feast definitions (register your entity and feature view)
+          store.apply([review_entity, imdb_feature_view])
+          
+          # 4. Ingest the DataFrame into the feature store
+          store.ingest("imdb_reviews", df)
+
+      env:
+        - name: ENVIRONMENT
+          value: {{ .Values.environment }}
+      restartPolicy: Never
+  backoffLimit: 4
+  activeDeadlineSeconds: 120  # Job will fail after 120 seconds if not completed

@@ -1,4 +1,4 @@
-.PHONY: entrypoint install train deploy start_port_forward stop_port_forward
+.PHONY: entrypoint install train feast deploy start_port_forward stop_port_forward
 
 ENVIRONMENT ?= dev-
 
@@ -9,12 +9,15 @@ make refresh:
 	@helm uninstall training-infra
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
 
+feast:
+	@echo "Deploying Feast..."
+	@helm upgrade --install feast ./feast/ --set environment=${ENVIRONMENT}
+
 deploy:
 	@echo "Deploying resources..."
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
 	@echo "Waiting for jobs to complete..."
 	@kubectl get jobs -o name | xargs -I {} bash -c 'kubectl wait --for=condition=complete {} --timeout=300s || kubectl wait --for=condition=failed {} --timeout=300s'
-
 
 wait_for_ray:
 	@echo "Waiting for Ray cluster head node to be ready..."

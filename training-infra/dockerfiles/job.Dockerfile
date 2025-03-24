@@ -16,5 +16,7 @@ RUN  ARCH=$(echo $TARGETPLATFORM | cut -d / -f 2) && \
     && chmod +x mc \
     && mv mc /usr/local/bin/
 
+RUN pip3 install --no-cache-dir feast[duckdb,redis]
+
 # Default command when container starts
 CMD ["/bin/bash"]
