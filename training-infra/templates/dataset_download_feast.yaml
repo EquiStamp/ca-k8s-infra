@@ -74,9 +74,9 @@ spec:
           registry="data/registry.db",  # Path where the registry will be stored
           provider="local",  # Using the local provider for this example
           # offline_store=PostgreSQLOfflineStoreConfig(# TODO host, db, user, password),
-          online_store=RedisOnlineStoreConfig(),
-          host="redis.feast-{{ .Values.environment }}.svc.cluster.local",
-          port=6379,
+          online_store=RedisOnlineStoreConfig(
+          connection_string="redis.feast-{{ .Values.environment }}.svc.cluster.local:6379",
+          ),
           entity_key_serialization_version=2,
           repo_path='.'
           )
