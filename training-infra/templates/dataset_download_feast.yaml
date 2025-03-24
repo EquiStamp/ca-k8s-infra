@@ -13,6 +13,7 @@ spec:
         - python3
         - -c
         - |
+          import os
           from datetime import datetime
 
           from datasets import load_dataset
@@ -33,6 +34,7 @@ spec:
           df["created_at"] = datetime.now()
 
           # Save to parquet for FileSource
+          os.makedirs("data", exist_ok=True)
           df.to_parquet('data/imdb_reviews.parquet')
 
           # 2. Set up Feast: define an entity and a feature view
