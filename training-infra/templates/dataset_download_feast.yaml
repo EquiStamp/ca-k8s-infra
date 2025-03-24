@@ -18,7 +18,7 @@ spec:
 
           from datasets import load_dataset
           from feast import FeatureStore, RepoConfig, Entity, Feature, FeatureView, Field, FileSource, ValueType
-          from feast.infra.offline_stores.contrib.postgres_offline_store.postgres import PostgreSQLOfflineStoreConfig
+          # from feast.infra.offline_stores.contrib.postgres_offline_store.postgres import PostgreSQLOfflineStoreConfig
           from feast.infra.online_stores.redis import RedisOnlineStoreConfig
           from feast.types import String, Int64
 
@@ -37,9 +37,6 @@ spec:
           os.makedirs("data", exist_ok=True)
           df.to_parquet('data/imdb_reviews.parquet')
 
-          # 2. Set up Feast: define an entity and a feature view
-          from feast import FeatureStore, Entity, Feature, FeatureView, ValueType
-          
           # Define an entity to represent each review by its unique id
           review_entity = Entity(
           name="review_id",
