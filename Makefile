@@ -12,8 +12,10 @@ make refresh:
 feast:
 	@echo "Deploying Feast..."
 	@helm upgrade --install feast ./feast/ --set environment=${ENVIRONMENT}
+	@echo "Waiting for Feast setup to complete..."
+	@kubectl get jobs -o name | xargs -I {} bash -c 'kubectl wait --for=condition=complete {} --timeout=300s || kubectl wait --for=condition=failed {} --timeout=300s'
 
-deploy:
+deploy: feast
 	@echo "Deploying resources..."
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
 	@echo "Waiting for jobs to complete..."
