@@ -32,9 +32,9 @@ spec:
           rm -rf /tmp/model
         env:
         - name: MINIO_ACCESS_KEY
-          value: "minioadmin"
+          value: "4k1l1_ni_Nyw3l3"
         - name: MINIO_SECRET_KEY
-          value: "minioadmin"
+          value: "Mh3nG@_Mh3nGuz1"
         - name: ENVIRONMENT
           value: {{ .Values.environment }}
       restartPolicy: Never
