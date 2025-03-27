@@ -17,10 +17,17 @@ spec:
           from datetime import datetime
 
           from datasets import load_dataset
-          from feast import FeatureStore, RepoConfig, Entity, Feature, FeatureView, Field, FileSource, ValueType
-          # from feast.infra.offline_stores.contrib.postgres_offline_store.postgres import PostgreSQLOfflineStoreConfig
+          from feast import (
+              Entity,
+              FeatureStore,
+              FeatureView,
+              Field,
+              FileSource,
+              RepoConfig,
+              ValueType,
+          )
           from feast.infra.online_stores.redis import RedisOnlineStoreConfig
-          from feast.types import String, Int64
+          from feast.types import Int64, String
 
           # 1. Download the IMDb dataset
           imdb_dataset = load_dataset("stanfordnlp/imdb", split="train")
@@ -39,43 +46,42 @@ spec:
 
           # Define an entity to represent each review by its unique id
           review_entity = Entity(
-          name="review_id",
-          value_type=ValueType.INT64,
-          description="Unique review identifier"
+              name="review_id",
+              value_type=ValueType.INT64,
+              description="Unique review identifier"
           )
 
           imdb_source = FileSource(
-          name="IMDB source",
-          path="data/imdb_reviews.parquet",
-          event_timestamp_column="event_timestamp",
-          created_timestamp_column="created_at",
-          timestamp_field="event_timestamp"
+              name="IMDB source",
+              path="data/imdb_reviews.parquet",
+              event_timestamp_column="event_timestamp",
+              created_timestamp_column="created_at",
+              timestamp_field="event_timestamp"
           )
 
           # Define a FeatureView for the IMDb reviews
           imdb_feature_view = FeatureView(
-          name="imdb_reviews",
-          entities=[review_entity],
-          schema=[
-            Field(name="text", dtype=String),
-            Field(name="label", dtype=Int64)
-          ],
-          # We are not specifying a TTL or batch_source here since we will use in-memory ingestion.
-          ttl=None,
-          source=imdb_source
+              name="imdb_reviews",
+              entities=[review_entity],
+              schema=[
+                  Field(name="text", dtype=String),
+                  Field(name="label", dtype=Int64)
+              ],
+              # We are not specifying a TTL or batch_source here since we will use in-memory ingestion.
+              ttl=None,
+              source=imdb_source
           )
 
           # 3. Connect to your Feast feature store
           repo_config = RepoConfig(
-          project="imdb",
-          registry="data/registry.db",  # Path where the registry will be stored
-          provider="local",  # Using the local provider for this example
-          # offline_store=PostgreSQLOfflineStoreConfig(# TODO host, db, user, password),
-          online_store=RedisOnlineStoreConfig(
-          connection_string="redis.feast-{{ .Values.environment }}.svc.cluster.local:6379",
-          ),
-          entity_key_serialization_version=2,
-          repo_path='.'
+              project="imdb",
+              registry="data/registry.db",  # Path where the registry will be stored
+              provider="local",  # Using the local provider for this example
+              online_store=RedisOnlineStoreConfig(
+                  connection_string="redis.feast-{{ .Values.environment }}.svc.cluster.local:6379",
+              ),
+              entity_key_serialization_version=2,
+              repo_path='.'
           )
           store = FeatureStore(config=repo_config)
 
