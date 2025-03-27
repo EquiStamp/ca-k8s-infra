@@ -21,10 +21,6 @@ metadata:
 spec:
   feastProject: imdb
   services:
-    offlineStore:
-      persistence:
-        file:
-          type: duckdb
     onlineStore:
       persistence:
         store:
