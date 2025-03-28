@@ -4,9 +4,9 @@ metadata:
   name: postgres-secret
   namespace: feast-{{ .Values.environment }}
 stringData:
-  POSTGRES_DB: feast
-  POSTGRES_USER: feast
-  POSTGRES_PASSWORD: feast
+  POSTGRES_DB: "feast"
+  POSTGRES_USER: "feast"
+  POSTGRES_PASSWORD: "feast"
 ---
 apiVersion: apps/v1
 kind: Deployment
