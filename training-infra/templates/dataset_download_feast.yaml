@@ -1,3 +1,12 @@
+# As far as I understand, there is no way to read secrets from one namespace to another.
+# So we need to duplicate this information.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: feast-data-stores
+stringData:
+  REDIS_PASSWORD: "feast"
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -78,7 +87,7 @@ spec:
               registry="data/registry.db",  # Path where the registry will be stored
               provider="local",  # Using the local provider for this example
               online_store=RedisOnlineStoreConfig(
-                  connection_string="redis.feast-{{ .Values.environment }}.svc.cluster.local:6379,password=feast",
+                  connection_string=f"redis.feast-{{ .Values.environment }}.svc.cluster.local:6379,password={os.getenv('REDIS_PASSWORD')}",
               ),
               entity_key_serialization_version=2,
               repo_path='.'
@@ -90,9 +99,9 @@ spec:
 
           # 4. Ingest the DataFrame into the feature store
           store.materialize_incremental(end_date=datetime.now())
-        env:
-          - name: ENVIRONMENT
-            value: {{ .Values.environment }}
+        envFrom:
+          - secretRef:
+              name: feast-data-stores
       restartPolicy: Never
   backoffLimit: 4
   activeDeadlineSeconds: 480  # Job will fail after 480 seconds if not completed
