@@ -19,8 +19,6 @@ spec:
           ports:
             - containerPort: 6379
           env:
-            - name: REDIS_USERNAME
-              value: "feast"
             - name: REDIS_PASSWORD
               value: "feast"
 ---
