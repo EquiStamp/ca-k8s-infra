@@ -78,7 +78,7 @@ spec:
               registry="data/registry.db",  # Path where the registry will be stored
               provider="local",  # Using the local provider for this example
               online_store=RedisOnlineStoreConfig(
-                  connection_string="redis://${REDIS_USERNAME}:${REDIS_PASSWORD}@redis.feast-{{ .Values.environment }}.svc.cluster.local:6379",
+                  connection_string="redis.feast-{{ .Values.environment }}.svc.cluster.local:6379,password=feast",
               ),
               entity_key_serialization_version=2,
               repo_path='.'
