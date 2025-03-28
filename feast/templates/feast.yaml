@@ -5,7 +5,7 @@ metadata:
   namespace: feast-{{ .Values.environment }}
 stringData:
   redis: |
-    connection_string: redis://${REDIS_USERNAME}:${REDIS_PASSWORD}d@redis.feast-{{ .Values.environment }}.svc.cluster.local:6379
+    connection_string: redis://${REDIS_USERNAME}:${REDIS_PASSWORD}@redis.feast-{{ .Values.environment }}.svc.cluster.local:6379
   sql: |
     path: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres.feast-{{ .Values.environment }}.svc.cluster.local:5432/${POSTGRES_DB}
     cache_ttl_seconds: 60
