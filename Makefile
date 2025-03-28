@@ -6,8 +6,9 @@ entrypoint: deploy train
 
 make refresh:
 	@echo "Refreshing resources..."
+	@helm uninstall feast
 	@helm uninstall training-infra
-	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
+	$(MAKE) deploy
 
 feast:
 	@echo "Deploying Feast..."
