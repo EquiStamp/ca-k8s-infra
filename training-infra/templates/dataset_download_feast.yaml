@@ -5,6 +5,9 @@ kind: Secret
 metadata:
   name: feast-data-stores
 stringData:
+  POSTGRES_DB: "feast"
+  POSTGRES_USER: "feast"
+  POSTGRES_PASSWORD: "feast"
   REDIS_PASSWORD: "feast"
 ---
 apiVersion: batch/v1
@@ -36,6 +39,7 @@ spec:
               ValueType,
           )
           from feast.infra.online_stores.redis import RedisOnlineStoreConfig
+          from feast.infra.registry.sql import SqlRegistryConfig
           from feast.types import Int64, String
 
           # 1. Download the IMDb dataset
@@ -81,10 +85,21 @@ spec:
               source=imdb_source
           )
 
+          # Connect to Postgres for the registry
+          registry = SqlRegistryConfig(
+              registry_type="sql",
+              path=f"postgresql+psycopg://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@postgres.feast-{{ .Values.environment }}.svc.cluster.local:5432/{os.getenv('POSTGRES_DB')}",
+              cache_ttl_seconds=0, # Cache will never expire
+              sqlalchemy_config_kwargs={
+              "echo": False,
+              "pool_pre_ping": True,
+            }
+          )
+
           # 3. Connect to your Feast feature store
           repo_config = RepoConfig(
               project="imdb",
-              registry="data/registry.db",  # Path where the registry will be stored
+              registry=registry,
               provider="local",  # Using the local provider for this example
               online_store=RedisOnlineStoreConfig(
                   connection_string=f"redis.feast-{{ .Values.environment }}.svc.cluster.local:6379,password={os.getenv('REDIS_PASSWORD')}",
