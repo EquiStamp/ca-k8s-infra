@@ -86,18 +86,25 @@ def copy_dir_to_s3(fs, source_path, target_path):
                 s3_file.write(local_file.read())
 
 
-def _get_s3_filesystem():
+def _get_s3_filesystem(purpose="training"):
     """
     Initialize and return an S3 filesystem instance.
 
     Returns:
         S3FileSystem instance
     """
+    if purpose == "training":
+        minio_location = "internal"
+    elif purpose == "logging":
+        minio_location = "external"
+    else:
+        raise ValueError(f"Unknown purpose: {purpose}")
+
     return S3FileSystem(
         access_key="minioadmin",
         secret_key="minioadmin",  # noqa
         endpoint_override=(
-            f"minio.minio-internal-{os.environ['ENVIRONMENT']}.svc.cluster.local:9000"
+            f"minio.minio-{minio_location}-{os.environ['ENVIRONMENT']}.svc.cluster.local:9000"
         ),
         scheme="http",
     )
@@ -306,10 +313,9 @@ def train_func(config):
     Returns:
         Dict with final loss
     """
-    # Get the current worker's rank
-    rank = ray.train.get_context().get_world_rank()
-    fs = _get_s3_filesystem()
-
+    # Initialize S3 filesystems for training and logging
+    fs = _get_s3_filesystem(purpose="training")
+    lg = _get_s3_filesystem(purpose="logging")
     # Copy data to disk and load datasets
     print("Copying data to disk")
     with TemporaryDirectory() as tmp_dir:
@@ -347,7 +353,9 @@ def train_func(config):
             )
 
         # Save model
-        _save_model(rank, model, tokenizer, local_model_dir, fs)
+        _save_model(ray.train.get_context().get_world_rank(), model, tokenizer, local_model_dir, fs)
+        # Save logs
+        _save_model(ray.train.get_context().get_world_rank(), model, tokenizer, local_model_dir, lg)
 
     return {"final_loss": epoch_loss / len(train_loader)}
 
