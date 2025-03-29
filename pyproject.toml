@@ -1,6 +1,6 @@
 [project]
     dependencies = [
-        "feast[redis]==0.47.0",
+        "feast[postgres,redis]==0.47.0",
         "ray[data,serve,train,tune]==2.42.1",
         "transformers==4.49.0",
         "datasets==3.3.1",
