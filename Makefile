@@ -1,15 +1,15 @@
-.PHONY: entrypoint install train deploy start_port_forward stop_port_forward
+.PHONY: deploy train infra start_port_forward stop_port_forward
 
 ENVIRONMENT ?= dev-
 
-entrypoint: deploy train
+deploy: infra train
 
-make refresh:
+refresh:
 	@echo "Refreshing resources..."
 	@helm uninstall training-infra
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
 
-deploy:
+infra:
 	@echo "Deploying resources..."
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
 	@echo "Waiting for jobs to complete..."
