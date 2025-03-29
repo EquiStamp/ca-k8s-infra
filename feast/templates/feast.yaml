@@ -8,7 +8,7 @@ stringData:
     connection_string: redis.feast-{{ .Values.environment }}.svc.cluster.local:6379,password=${REDIS_PASSWORD}
   sql: |
     path: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres.feast-{{ .Values.environment }}.svc.cluster.local:5432/${POSTGRES_DB}
-    cache_ttl_seconds: 60
+    cache_ttl_seconds: 0
     sqlalchemy_config_kwargs:
         echo: false
         pool_pre_ping: true
