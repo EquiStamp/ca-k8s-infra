@@ -14,6 +14,20 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from opentelemetry import trace, metrics
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+
+# Trace-related imports
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+
+# Metric-related imports
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader, ConsoleMetricExporter
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+
+
 runtime_env = {
     "env_vars": {
         "ENVIRONMENT": os.environ["ENVIRONMENT"],
@@ -220,6 +234,34 @@ def train_func(config):
 if __name__ == "__main__":
     # Run `make ray_port_forward` ahead of this to make the ray cluster accessible
     ray.init(address="ray://localhost:10001", runtime_env=runtime_env)
+    
+    # Define a resource with service name
+    resource = Resource.create({"service.name": "my-python-service"})
+
+    # ---- Setup Tracing ---- #
+    tracer_provider = TracerProvider(resource=resource)
+    trace.set_tracer_provider(tracer_provider)
+
+    # Configure OTLP and Console trace exporters
+    otlp_exporter = OTLPSpanExporter(
+    endpoint=f"http://opentelemetry-collector.observability-{os.environ['ENVIRONMENT']}.svc.cluster.local:4318/v1/traces",
+    headers={},
+    timeout=10
+)
+
+    # Add exporters to the span processor
+    tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+
+    # Create a tracer
+    tracer = trace.get_tracer(__name__)
+
+    def setup_tracing_and_metrics():
+        # Start a trace span
+        with tracer.start_as_current_span("hello-world-span") as span:
+            print("Hello, World!")
+    
+    # Setup tracing with both exporters
+    setup_tracing_and_metrics()
 
     with TemporaryDirectory() as results_dir:
         # Create the trainer
