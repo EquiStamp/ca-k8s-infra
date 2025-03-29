@@ -96,7 +96,7 @@ spec:
             }
           )
 
-          # 3. Connect to your Feast feature store
+          # 3. Connect to Feast feature store
           repo_config = RepoConfig(
               project="imdb",
               registry=registry,
@@ -109,7 +109,7 @@ spec:
           )
           store = FeatureStore(config=repo_config)
 
-          # Apply the Feast definitions (register your entity and feature view)
+          # Apply the Feast definitions
           store.apply([review_entity, imdb_feature_view])
 
           # 4. Ingest the DataFrame into the feature store
