@@ -27,6 +27,10 @@ spec:
           type: redis
           secretRef:
             name: feast-data-stores
+      server:
+        envFrom:
+          - secretRef:
+              name: postgres-secret
     registry:
       local:
         persistence:
