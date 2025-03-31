@@ -81,6 +81,14 @@ def train_func(config):
         endpoint_override=f"minio.minio-internal-{os.environ['ENVIRONMENT']}.svc.cluster.local:9000",
         scheme="http",
     )
+    # Initialize the S3 filesystem for nginx logging
+    # Nginx is used as a proxy for training logging
+    fs_nginx = S3FileSystem(
+        access_key="minioadmin",
+        secret_key="minioadmin",  # noqa
+        endpoint_override=f"minio.minio-external-{os.environ['ENVIRONMENT']}.svc.cluster.local:9000",
+        scheme="http",
+    )
 
     # copy data to disk
     print("Copying data to disk")
@@ -213,6 +221,8 @@ def train_func(config):
             # Copy the saved model files back to S3
             checkpoint_path = f"models/checkpoints/sentiment_model/{ray.train.get_context().get_trial_id()}"
             copy_dir_to_s3(fs, local_model_dir, checkpoint_path)
+            # Copy the model files to nginx for logging
+            copy_dir_to_s3(fs_nginx, local_model_dir, checkpoint_path)
 
     return {"final_loss": epoch_loss / len(train_loader)}
 
