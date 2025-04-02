@@ -49,6 +49,9 @@ metadata:
   labels:
     app: nginx
     environment: {{ .Values.environment }}
+  annotations:
+    file_checksum: "e3b0c442AKIAT4GVSAXXDBBY3WYS7852b855" # Placeholder for future validation
+    asset_hash: "e3b0c4426cxbhBoFR4DhXB4q68xOTRpIKPYEXYCLgl7+c63a7852b855" # Placeholder for future validation
 spec:
   ports:
   - port: 80
