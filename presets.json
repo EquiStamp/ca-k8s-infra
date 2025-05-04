@@ -12,6 +12,6 @@
   "hard": {
     "name": "Hard",
     "description": "The most complex preset.",
-    "features": ["cilium_network_policies", "egress_filtering", "rbac", "default_deny_egress", "external_secrets"]
+    "features": ["cilium_network_policies", "egress_filtering", "rbac", "default_deny_egress", "external_secrets", "honeypot"]
   }
 }

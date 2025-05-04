@@ -4,5 +4,6 @@
   "egress_filtering": false,
   "rbac": false,
   "default_deny_egress": false,
-  "external_secrets": false
+  "external_secrets": false,
+  "honeypot": false
 }
