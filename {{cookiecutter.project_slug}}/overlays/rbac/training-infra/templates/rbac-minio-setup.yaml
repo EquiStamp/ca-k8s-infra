@@ -68,8 +68,13 @@ spec:
               mc admin policy create myminio team-alpha-policy /tmp/team-alpha-policy.json
               mc admin policy create myminio team-beta-policy /tmp/team-beta-policy.json
               # Create MinIO users for each team
+{% if cookiecutter.external_secrets %}
+              mc admin user add myminio team-alpha $TEAM_ALPHA_PASSWORD
+              mc admin user add myminio team-beta $TEAM_BETA_PASSWORD
+{% else %}
               mc admin user add myminio team-alpha team-alpha-password
               mc admin user add myminio team-beta team-beta-password
+{% endif %}
               # Assign policies to users
               mc admin policy attach myminio team-alpha-policy --user team-alpha
               mc admin policy attach myminio team-beta-policy --user team-beta
@@ -86,6 +91,16 @@ spec:
                 secretKeyRef:
                   name: minio-credentials
                   key: minio-password
+            - name: TEAM_ALPHA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: team-credentials
+                  key: team-alpha-password
+            - name: TEAM_BETA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: team-credentials
+                  key: team-beta-password
     {% else %}
             - name: MINIO_ACCESS_KEY
               value: "minioadmin"
