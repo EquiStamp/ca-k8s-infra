@@ -1,1 +1,36 @@
 rayClusterName: raycluster
+falco:
+  falco:
+    json_output: true
+    json_include_output_property: true
+    stdout_output:
+      enabled: true
+    file_output:
+      enabled: true
+      keep_alive: false
+      filename: ./falco_events.log
+
+  customRules:
+    # Falco already has an extensive default ruleset which we can customize here.
+    # See https://falco.org/docs/reference/rules/default-rules/ for details.
+    custom-rules.yaml: |
+      # We need to allow the download (and execution) of the 'mc' binary.
+      # The download also requires access to the openssl binary.
+      - macro: minio_client_execute
+        condition: proc.exepath = /usr/local/bin/mc
+      - macro: wget_minio_dl
+        condition: >
+            (proc.exepath = /usr/bin/wget and
+            proc.cmdline = "wget https://dl.min.io/client/mc/release/linux-amd64/mc")
+      - macro: openssl_execute
+        condition: proc.exepath = /usr/bin/openssl
+      - macro: known_drop_and_execute_activities
+        condition: minio_client_execute or wget_minio_dl or openssl_execute
+        override:
+          condition: replace
+
+    # TODO
+    #
+    # http_output:
+    #   enabled: true
+    #   url: "http://falco-guard:2801/"

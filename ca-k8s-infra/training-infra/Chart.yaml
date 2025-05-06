@@ -3,3 +3,12 @@ name: training-infra
 version: 0.0.1
 description: |
   Training infrastructure.
+dependencies:
+  - name: falco
+    version: "4.21.3"
+    repository: "https://falcosecurity.github.io/charts"
+  # TODO: Configure Falco Talon
+  #
+  # - name: falco-talon
+  #   version: "0.3.0"
+  #   repository: "https://falcosecurity.github.io/charts"
