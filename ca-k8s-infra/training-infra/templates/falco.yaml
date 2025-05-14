@@ -1,0 +1,43 @@
+# FIXME: Does not work yet (=> hence commented out). May switch to Falco Talon anyway.
+#
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: falco-guard-svc
+#   labels:
+#     app: falco-guard
+# spec:
+#   type: ClusterIP
+#   ports:
+#     - port: 2801
+#       targetPort: http
+#       protocol: TCP
+#       name: http
+#   selector:
+#     app: falco-guard
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: falco-guard
+#   labels:
+#     app: falco-guard
+# spec:
+#   selector:
+#     matchLabels:
+#       app: falco-guard
+#   template:
+#     metadata:
+#       labels:
+#         app: falco-guard
+#     spec:
+#       containers:
+#         - name: falco-guard
+#           image: localhost:5001/guard:{{ .Values.environment }}
+#           imagePullPolicy: Always
+#           ports:
+#             - name: http
+#               containerPort: 2801
+#               protocol: TCP
+#           command:
+#             - /bin/bash
