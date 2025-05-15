@@ -40,10 +40,10 @@ def main():
                 if not context[dep]:
                     raise ValueError(f"'{key}' requires '{dep}' to be enabled")
 
-    for incompatible_tuple in INCOMPATIBLE:
-        if sum(context.get(measure, False) for measure in incompatible_tuple) > 1:
+    for incompatible_measures in INCOMPATIBLE:
+        if sum(context.get(measure, False) for measure in incompatible_measures) > 1:
             raise ValueError(
-                f"These security measures are incompatible: {', '.join(incompatible_tuple)}"
+                f"These security measures are incompatible: {', '.join(incompatible_measures)}"
             )
 
 
