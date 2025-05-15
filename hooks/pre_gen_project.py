@@ -1,6 +1,6 @@
 import json
 
-DEPENDENCIES = {
+DEPENDENCIES: dict[str, list[str]] = {
     "network_policies": [],
     "external_secrets": [],
     "rbac": ["external_secrets"],
@@ -10,7 +10,7 @@ DEPENDENCIES = {
     "file_integrity": [],
 }
 
-INCOMPATIBLE = []
+INCOMPATIBLE: list[tuple] = []
 
 
 def get_cookiecutter_context():
