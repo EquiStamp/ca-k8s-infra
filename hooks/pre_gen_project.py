@@ -10,6 +10,7 @@ DEPENDENCIES: dict[str, list[str]] = {
     "file_integrity": [],
 }
 
+# List of mutually incompatible measures
 INCOMPATIBLE: list[tuple] = []
 
 
