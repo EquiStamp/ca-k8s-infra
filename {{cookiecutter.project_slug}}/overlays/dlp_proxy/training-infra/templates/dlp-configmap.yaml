@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dlp-nginx-config
+  namespace: minio-external-{% raw %}{{ .Values.environment }}{% endraw %}
+data:
+  nginx.conf: |
+    worker_processes auto;
+    error_log /var/log/nginx/error.log;
+    pid /run/nginx.pid;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        # Simple log format with basic DLP info
+        log_format dlp '$remote_addr - $remote_user [$time_local] "$request" '
+                       '$status $body_bytes_sent "$http_referer" "$http_user_agent"';
+
+        access_log /var/log/nginx/access.log dlp;
+
+        # Size limit - primary DLP control
+        client_max_body_size 50M;
+
+        # Basic S3 compatibility settings
+        ignore_invalid_headers off;
+        proxy_buffering off;
+        
+        # Minimal rate limiting
+        limit_req_zone $binary_remote_addr zone=upload_limit:10m rate=10r/m;
+
+        server {
+            listen 9000;
+            
+            location / {
+            
+                # Only scan PUT/POST requests (uploads)
+                if ($request_method ~ ^(PUT|POST)$) {
+                    # Simplified pattern detection - focus on critical secrets
+                    if ($request_body ~* "(api_key|secret_key|password|aws_access)") {
+                        return 403 '{"error": "Request contains sensitive data"}';
+                    }
+                    
+                    # Simple model pattern detection
+                    if ($request_body ~* "(state_dict|weights|model_parameters)") {
+                        return 403 '{"error": "Request contains model data"}';
+                    }
+                }
+                
+                # Simplified file type blocking - focus on most critical types
+                if ($request_uri ~* "\\.(pem|key|p12|pt|pth|h5|onnx)$") {
+                    return 403 '{"error": "File type not allowed"}';
+                }
+
+                # Standard proxy headers for S3
+                proxy_set_header Host $http_host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                
+                # Required S3 settings
+                proxy_connect_timeout 300;
+                proxy_http_version 1.1;
+                proxy_set_header Connection "";
+                
+                # Pass to original MinIO service
+                proxy_pass http://minio:9000;
+            }
+        }
+    }

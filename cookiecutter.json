@@ -12,5 +12,6 @@
   "tetragon": false,
   "security_monitoring": false,
   "file_integrity": false,
-  "tripwires": false
+  "tripwires": false,
+  "dlp_proxy": false
 }

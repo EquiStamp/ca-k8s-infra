@@ -1,0 +1,9 @@
+# This patches the minio service to point to our DLP proxy instead of directly to MinIO
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: minio-external-{% raw %}{{ .Values.environment }}{% endraw %}
+spec:
+  selector:
+    app: dlp-nginx-proxy
