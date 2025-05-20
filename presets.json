@@ -1,0 +1,32 @@
+{
+  "low": {
+    "name": "Low",
+    "description": "A low security preset for easy use.",
+    "features": []
+  },
+  "medium": {
+    "name": "Medium",
+    "description": "A medium complexity preset.",
+    "features": [
+      "network_policies",
+      "external_secrets",
+      "rbac",
+      "teams"
+    ]
+  },
+  "high": {
+    "name": "High",
+    "description": "A high security preset, the most complex case.",
+    "features": [
+      "network_policies",
+      "external_secrets",
+      "rbac",
+      "teams",
+      "honeypot",
+      "tetragon",
+      "security_monitoring",
+      "file_integrity",
+      "tripwires"
+    ]
+  }
+}
