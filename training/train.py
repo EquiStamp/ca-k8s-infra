@@ -76,8 +76,8 @@ def train_func(config):
 
     # Initialize the S3 filesystem
     fs = S3FileSystem(
-        access_key="minioadmin",
-        secret_key="minioadmin",  # noqa
+        access_key="minioadmin_more_secure_access_key_4886937161",
+        secret_key="minioadmin_more_secure_secret_key_5223996758",  # noqa
         endpoint_override=f"minio.minio-internal-{os.environ['ENVIRONMENT']}.svc.cluster.local:9000",
         scheme="http",
     )
