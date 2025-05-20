@@ -25,9 +25,9 @@ spec:
           echo "Dataset transfer complete"
         env:
         - name: MINIO_ACCESS_KEY
-          value: "minioadmin"
+          value: "minioadmin_more_secure_access_key_4886937161"
         - name: MINIO_SECRET_KEY
-          value: "minioadmin"
+          value: "minioadmin_more_secure_secret_key_5223996758"
         - name: ENVIRONMENT
           value: {{ .Values.environment }}
         volumeMounts:
