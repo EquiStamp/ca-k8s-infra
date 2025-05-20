@@ -36,8 +36,8 @@ train: start_port_forward
 	@trap 'make stop_port_forward' EXIT 2 15; \
 	echo "Training model..." && \
 	{%- if cookiecutter.teams %}
-	export MINIO_USER="minioadmin" && \
-	export MINIO_PASSWORD="minioadmin" && \
+	export MINIO_PASSWORD=$$(kubectl get secret minio-credentials -o jsonpath='{.data.minio-password}' | base64 --decode) && \
+	export MINIO_USER=$$(kubectl get secret minio-credentials -o jsonpath='{.data.minio-username}' | base64 --decode) && \
 	export MINIO_ENDPOINT="minio.minio-internal-${ENVIRONMENT}.svc.cluster.local:9000" && \
 	{%- endif %}
 	RAY_AIR_NEW_OUTPUT=0 uv run --active python training/train.py
