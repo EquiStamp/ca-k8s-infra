@@ -200,8 +200,8 @@ data:
     resource "aws_secretsmanager_secret_version" "analysis_minio_credentials" {
       secret_id     = aws_secretsmanager_secret.analysis_minio_credentials.id
       secret_string = jsonencode({
-        access_key = minio_accesskey.analyst.access_key
-        secret_key = minio_accesskey.analyst.secret_key
+        minio-username = minio_accesskey.analyst.access_key
+        minio-password = minio_accesskey.analyst.secret_key
       })
     }
 
@@ -225,8 +225,8 @@ data:
     resource "aws_secretsmanager_secret_version" "ml_minio_credentials" {
       secret_id     = aws_secretsmanager_secret.ml_minio_credentials.id
       secret_string = jsonencode({
-        access_key = minio_accesskey.ml-engineer.access_key
-        secret_key = minio_accesskey.ml-engineer.secret_key
+        minio-username = minio_accesskey.ml-engineer.access_key
+        minio-password = minio_accesskey.ml-engineer.secret_key
       })
     }
 

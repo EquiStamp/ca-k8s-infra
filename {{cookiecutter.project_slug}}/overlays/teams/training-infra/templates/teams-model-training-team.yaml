@@ -15,11 +15,11 @@ spec:
     - secretKey: MINIO_USER
       remoteRef:
         key: ml/minio-credentials
-        property: access_key
+        property: minio-username
     - secretKey: MINIO_PASSWORD
       remoteRef:
         key: ml/minio-credentials
-        property: secret_key
+        property: minio-password
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
