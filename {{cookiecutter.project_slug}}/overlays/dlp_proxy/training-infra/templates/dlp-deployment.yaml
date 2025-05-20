@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dlp-nginx-proxy
+  namespace: minio-external-{% raw %}{{ .Values.environment }}{% endraw %}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dlp-nginx-proxy
+  template:
+    metadata:
+      labels:
+        app: dlp-nginx-proxy
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: nginx-logs
+          mountPath: /var/log/nginx
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+        livenessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: dlp-nginx-config
+      - name: nginx-logs
+        emptyDir: {}
