@@ -25,6 +25,17 @@
       "required": ["clusterName"],
       "additionalProperties": false
     },
+    "teams": {
+      "type": "object",
+      "properties": {
+        "analysis": {
+          "type": "string"
+        },
+        "ml": {
+          "type": "string"
+        }
+      }
+    },
     "environment": {
       "type": "string"
     }

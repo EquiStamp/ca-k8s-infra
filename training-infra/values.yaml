@@ -2,3 +2,10 @@ ray:
   clusterName: raycluster
   workers:
     allowTrafficTo: []
+
+
+# User group names
+teams:
+  analysis: ""
+  ml: ""
+
