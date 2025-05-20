@@ -1,18 +1,24 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-      "rayClusterName": {
-        "type": "string"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ray": {
+      "type": "object",
+      "properties": {
+        "clusterName": {
+          "type": "string"
+        }
       },
-      "environment": {
-        "type": "string"
-      }
+      "required": ["clusterName"],
+      "additionalProperties": false
     },
-    "required": [
-      "rayClusterName",
-      "environment"
-    ],
-    "additionalProperties": false
-  }
-  
+    "environment": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "ray",
+    "environment"
+  ],
+  "additionalProperties": false
+}
