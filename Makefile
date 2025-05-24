@@ -1,15 +1,27 @@
-.PHONY: entrypoint install train deploy start_port_forward stop_port_forward
+.PHONY: entrypoint install install_dependencies deploy train wait_for_ray start_port_forward stop_port_forward refresh
 
 ENVIRONMENT ?= dev-
 
 entrypoint: deploy train
 
-make refresh:
+install_dependencies:
+	@echo "Installing External Secrets Operator..."
+	@helm repo add external-secrets https://charts.external-secrets.io || true
+	@helm repo update
+	@helm install external-secrets external-secrets/external-secrets \
+	  --namespace external-secrets \
+	  --create-namespace \
+	  --wait || true
+	@echo "Waiting for CRDs to be established..."
+	@kubectl wait --for=condition=established --timeout=60s crd/externalsecrets.external-secrets.io || true
+	@kubectl wait --for=condition=established --timeout=60s crd/secretstores.external-secrets.io || true
+
+refresh:
 	@echo "Refreshing resources..."
 	@helm uninstall training-infra
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
 
-deploy:
+deploy: install_dependencies
 	@echo "Deploying resources..."
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
 	@echo "Waiting for jobs to complete..."
