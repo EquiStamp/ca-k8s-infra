@@ -7,11 +7,13 @@ entrypoint: deploy train
 make refresh:
 	@echo "Refreshing resources..."
 	@helm uninstall training-infra
+	@helm uninstall feast
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
 
 deploy:
 	@echo "Deploying resources..."
 	@helm upgrade --install training-infra ./training-infra --set environment=${ENVIRONMENT}
+	@helm upgrade --install feast ./feast --set environment=${ENVIRONMENT}
 	@echo "Waiting for jobs to complete..."
 	@bash ./scripts/wait_for_jobs.sh
 
