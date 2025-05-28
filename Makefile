@@ -17,17 +17,25 @@ deploy:
 
 wait_for_ray:
 	@echo "Waiting for Ray cluster head node to be ready..."
-	@echo "Checking endpoint: raycluster-${ENVIRONMENT}-head-svc"
-	@for i in $$(seq 1 30); do \
-		POD_NAME=$$(kubectl get endpoints raycluster-${ENVIRONMENT}-head-svc -o jsonpath='{.subsets[0].addresses[0].targetRef.name}' 2>/dev/null || echo ""); \
+	@RETRY=0; DELAY=2; \
+	while [ $$RETRY -lt 6 ]; do \
+		POD_NAME=$$(kubectl get endpoints raycluster-${ENVIRONMENT}-head-svc -o jsonpath='{.subsets[0].addresses[0].targetRef.name}' 2>/dev/null); \
+		echo "Checking for pod: $$POD_NAME"; \
 		if [ -n "$$POD_NAME" ]; then \
 			echo "Found pod: $$POD_NAME"; \
-			kubectl wait --for=condition=ready pod/$$POD_NAME --timeout=120s && break; \
+			kubectl wait --for=condition=ready "pod/$$POD_NAME" --timeout=60s; \
+			break; \
 		else \
-			echo "Endpoint not ready, waiting... ($$i/30)"; \
-			sleep 10; \
+			RETRY=$$((RETRY + 1)); \
+			echo "Attempt $$RETRY/5: Pod not found, waiting $$DELAY seconds..."; \
+			sleep $$DELAY; \
+			DELAY=$$((DELAY * 2)); \
 		fi; \
-	done
+	done; \
+	if [ $$RETRY -eq 5 ]; then \
+		echo "Error: Could not find pod after 5 attempts"; \
+		exit 1; \
+	fi
 
 start_port_forward: wait_for_ray
 	@echo "Starting port forwarding..."
