@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
       - name: dataset-sync
-        image: localhost:5001/job:{{ .Values.environment }}
+        image: localhost:5001/job:latest
         imagePullPolicy: Always
         command:
         - /bin/bash
