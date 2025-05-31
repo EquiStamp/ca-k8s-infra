@@ -4,6 +4,7 @@ metadata:
   labels:
     app: aim-deployment
   name: aim-deployment
+  namespace: training-{{ .Values.environment }}
 spec:
   selector:
     matchLabels:
@@ -45,6 +46,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: aim
+  namespace: training-{{ .Values.environment }}
 spec:
   selector:
     app: aim-deployment

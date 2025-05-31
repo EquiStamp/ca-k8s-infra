@@ -2,10 +2,11 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: aim-runs-claim
+  namespace: training-{{ .Values.environment }}
 spec:
   accessModes:
     - ReadWriteMany
   storageClassName: nfs
   resources:
     requests:
-      storage: 100Mi
+      storage: 100Mi #check this out what heppens when it goes to 10Gi

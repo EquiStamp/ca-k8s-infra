@@ -17,7 +17,7 @@ deploy:
 
 wait_for_ray:
 	@echo "Waiting for Ray cluster head node to be ready..."
-	@POD_NAME=$$(kubectl get endpoints raycluster-${ENVIRONMENT}-head-svc -o jsonpath='{.subsets[0].addresses[0].targetRef.name}') && kubectl wait --for=condition=ready pod/$$POD_NAME --timeout=60s
+	@POD_NAME=$$(kubectl get endpoints raycluster-${ENVIRONMENT}-head-svc -o jsonpath='{.subsets[0].addresses[0].targetRef.name}') && kubectl wait --for=condition=ready pod/$$POD_NAME --timeout=120s
 
 start_port_forward: wait_for_ray
 	@echo "Starting port forwarding..."
