@@ -65,7 +65,7 @@ spec:
         - name: MINIO_ACCESS_KEY
           value: "minioadmin"
         - name: MINIO_SECRET_KEY
-          value: "minioadmin"
+          value: "minioadminAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         - name: ENVIRONMENT
           value: {{ .Values.environment }}
       restartPolicy: Never
