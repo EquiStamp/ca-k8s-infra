@@ -1,0 +1,5 @@
+apiVersion: v2
+name: feast
+version: 0.0.1
+description: |
+  Feast setup.

@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: feast-data-stores
+  namespace: feast-{{ .Values.environment }}
+stringData:
+  redis: |
+    connection_string: redis.feast-{{ .Values.environment }}.svc.cluster.local:6379,password=${REDIS_PASSWORD}
+  sql: |
+    path: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres.feast-{{ .Values.environment }}.svc.cluster.local:5432/${POSTGRES_DB}
+    cache_ttl_seconds: 0
+    sqlalchemy_config_kwargs:
+        echo: false
+        pool_pre_ping: true
+---
+apiVersion: feast.dev/v1alpha1
+kind: FeatureStore
+metadata:
+  name: imdb
+  namespace: feast-{{ .Values.environment }}
+spec:
+  feastProject: imdb
+  services:
+    onlineStore:
+      persistence:
+        store:
+          type: redis
+          secretRef:
+            name: feast-data-stores
+      server:
+        envFrom:
+          - secretRef:
+              name: postgres-secret
+    registry:
+      local:
+        persistence:
+          store:
+            type: sql
+            secretRef:
+              name: feast-data-stores

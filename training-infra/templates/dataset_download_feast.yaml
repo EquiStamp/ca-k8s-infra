@@ -1,0 +1,122 @@
+# As far as I understand, there is no way to read secrets from one namespace to another.
+# So we need to duplicate this information.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: feast-data-stores
+stringData:
+  POSTGRES_DB: "feast"
+  POSTGRES_USER: "feast"
+  POSTGRES_PASSWORD: "feast"
+  REDIS_PASSWORD: "feast"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stanfordnlp-imdb-dataset-sync-feast
+spec:
+  template:
+    spec:
+      containers:
+      - name: dataset-sync
+        image: localhost:5001/job:{{ .Values.environment }}
+        imagePullPolicy: Always
+        command:
+        - python3
+        - -c
+        - |
+          import os
+          from datetime import datetime
+
+          from datasets import load_dataset
+          from feast import (
+              Entity,
+              FeatureStore,
+              FeatureView,
+              Field,
+              FileSource,
+              RepoConfig,
+              ValueType,
+          )
+          from feast.infra.online_stores.redis import RedisOnlineStoreConfig
+          from feast.infra.registry.sql import SqlRegistryConfig
+          from feast.types import Int64, String
+
+          # 1. Download the IMDb dataset
+          imdb_dataset = load_dataset("stanfordnlp/imdb", split="train")
+          df = imdb_dataset.to_pandas()
+
+          # Add a unique identifier for each review (this will serve as our primary key)
+          df["review_id"] = range(len(df))
+
+          # Add event and created_at timestamps (Feast uses these during materialization)
+          df["event_timestamp"] = datetime.now()
+          df["created_at"] = datetime.now()
+
+          # Save to parquet for FileSource
+          os.makedirs("data", exist_ok=True)
+          df.to_parquet('data/imdb_reviews.parquet')
+
+          # Define an entity to represent each review by its unique id
+          review_entity = Entity(
+              name="review_id",
+              value_type=ValueType.INT64,
+              description="Unique review identifier"
+          )
+
+          imdb_source = FileSource(
+              name="IMDB source",
+              path="data/imdb_reviews.parquet",
+              event_timestamp_column="event_timestamp",
+              created_timestamp_column="created_at",
+              timestamp_field="event_timestamp"
+          )
+
+          # Define a FeatureView for the IMDb reviews
+          imdb_feature_view = FeatureView(
+              name="imdb_reviews",
+              entities=[review_entity],
+              schema=[
+                  Field(name="text", dtype=String),
+                  Field(name="label", dtype=Int64)
+              ],
+              # We are not specifying a TTL or batch_source here since we will use in-memory ingestion.
+              ttl=None,
+              source=imdb_source
+          )
+
+          # Connect to Postgres for the registry
+          registry = SqlRegistryConfig(
+              registry_type="sql",
+              path=f"postgresql+psycopg://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@postgres.feast-{{ .Values.environment }}.svc.cluster.local:5432/{os.getenv('POSTGRES_DB')}",
+              cache_ttl_seconds=0, # Cache will never expire
+              sqlalchemy_config_kwargs={
+              "echo": False,
+              "pool_pre_ping": True,
+            }
+          )
+
+          # 3. Connect to Feast feature store
+          repo_config = RepoConfig(
+              project="imdb",
+              registry=registry,
+              provider="local",  # Using the local provider for this example
+              online_store=RedisOnlineStoreConfig(
+                  connection_string=f"redis.feast-{{ .Values.environment }}.svc.cluster.local:6379,password={os.getenv('REDIS_PASSWORD')}",
+              ),
+              entity_key_serialization_version=2,
+              repo_path='.'
+          )
+          store = FeatureStore(config=repo_config)
+
+          # Apply the Feast definitions
+          store.apply([review_entity, imdb_feature_view])
+
+          # 4. Ingest the DataFrame into the feature store
+          store.materialize_incremental(end_date=datetime.now())
+        envFrom:
+          - secretRef:
+              name: feast-data-stores
+      restartPolicy: Never
+  backoffLimit: 4
+  activeDeadlineSeconds: 480  # Job will fail after 480 seconds if not completed
