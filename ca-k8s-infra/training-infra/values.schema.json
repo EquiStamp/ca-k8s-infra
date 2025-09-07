@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "rayClusterName": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "falco": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "rayClusterName",
+    "environment"
+  ],
+  "additionalProperties": false
+}
