@@ -3,7 +3,7 @@
         "ray[data,serve,train,tune]==2.42.1",
         "transformers==4.49.0",
         "datasets==3.3.1",
-        "torch==2.6.0+cpu",
+        "torch==2.13.0",
 ]
     description="Training framework"
     name="training"
